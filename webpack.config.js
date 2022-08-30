@@ -1,63 +1,64 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   mode: "development",
-  entry: [
-    "@babel/polyfill",
-    "./src/javascripts/main.js",
-  ],
+  entry: ["./src/index.js"],
   output: {
-        path:path.join(__dirname, "/public"),
-        filename:'./javascripts/[name]_bundle.js',
-        publicPath:'./',
-        assetModuleFilename: './images/[name][ext]'
+    path: path.join(__dirname, "/dist"),
+    filename: "./[name]_bundle.js",
+  },
+  resolve: {
+    alias: {
+      Stylesheets: path.resolve(__dirname, "./public/stylesheets"),
+      Images: path.resolve(__dirname, "./public/images"),
+    },
   },
   module: {
-    rules:[
+    rules: [
       {
-        test:/\.scss$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'sass-loader'
-        ],
-        exclude: /node_modules/
-      },
-      {
-        test:/\.js$/,
+        test: /\.js$/,
         use: [
           {
-            loader: 'babel-loader',
+            loader: "babel-loader",
             options: {
-              presets: ['@babel/preset-env']
-            }
-          }
+              presets: ["@babel/preset-env"],
+            },
+          },
         ],
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
-        test: /\.svg$/,
+        test: /\.css/,
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.(svg|png|jpe?g|gif|ico)$/,
         use: [
           {
-            loader: 'file-loader',
+            loader: "file-loader",
             options: {
-              name: './images/[name].[ext]'
-            }
-          }
+              name: "images/[name]-[hash].[ext]",
+            },
+          },
         ],
-        type: 'javascript/auto'
-      }
-    ]
+      },
+    ],
   },
-  
-  plugins:[
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: "style.css",
+    }),
     new HtmlWebpackPlugin({
-      template: './src/html/main.html',
-      filename: './html/main.html'
-    })
-  ]
-  
-  
-  
-}
+      template: path.resolve(__dirname, "./public/index.html"),
+      inject: true,
+      filename: path.resolve(__dirname, "./dist/index.html"),
+    }),
+  ],
+  devServer: {
+    port: 9000,
+    hot: true,
+  },
+};
